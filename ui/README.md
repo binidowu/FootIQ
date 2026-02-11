@@ -136,6 +136,28 @@ The UI sends to `POST /query`:
 
 ---
 
+## Prompt Matrix (Demo-Safe)
+
+Use these in the UI for reliable demonstrations.
+
+### Live mode (SportsAPI-backed)
+- `How is Haaland doing this season?`
+- `How is De Bruyne doing this season?`
+- `How is Bellingham doing this season?`
+- `Compare Haaland and Mbappe`
+
+### Replay mode (fixtures only)
+- `How is Haaland doing this season?`
+- `Analyze Haaland xG trend`
+- `How is Saka doing?`
+- `Why is Haaland's output dropping?`
+
+### Error-path prompts (intentional)
+- `How is dfgdfg doing?` (should produce contract error)
+- Unknown replay query not in fixtures (should produce replay error)
+
+---
+
 ## Known Limitations (MVP)
 
 1. **No streaming** — Responses appear all at once after the agent completes. A future WebSocket/SSE layer could enable token-by-token streaming.
@@ -143,7 +165,9 @@ The UI sends to `POST /query`:
 3. **Artifact generation is LLM-discretionary** — The agent decides whether to generate plots. Some L2 queries may return text-only responses without artifacts.
 4. **No authentication** — MVP is for local demo use. Production deployment would require auth middleware.
 5. **Session not persisted across refreshes** — In-memory only. Refreshing the page starts a new session.
-6. **Replay mode not configurable from UI** — Currently defaults to `live` mode. Replay mode (`data_mode: "replay"`) can be set via direct API calls.
+6. **Live search is plan-gated** — If `/search` is unavailable on your SportsAPI plan, live mode uses alias fallback and supports only known players (`Haaland`, `Bellingham`, `De Bruyne`, `Mbappe`) unless alias map is extended.
+7. **Replay mode is fixture-bound** — Replay only supports players/queries present in `python_agent/tests/fixtures/sportapi/`.
+8. **Expected warning in live mode** — `SEARCH_UNAVAILABLE_USING_ALIAS` may appear when live search fallback is used (this is expected behavior on constrained plans).
 
 ---
 
@@ -155,7 +179,7 @@ The UI sends to `POST /query`:
 - [ ] Verify debug panel shows `trace_id`, `data_depth`, and `tools_invoked`
 - [ ] Test error path by querying a misspelled player name
 - [ ] Test "New Chat" button resets conversation
-- [ ] Verify warning chips appear on cached data responses
+- [ ] Verify warning chips appear for user-meaningful warnings (`DATA_MODE_REPLAY`, `BASELINE_MISSING`, etc.)
 - [ ] Verify suggestion buttons trigger new queries on click
 - [ ] Check mobile layout at 375px width
 

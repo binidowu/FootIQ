@@ -36,10 +36,10 @@ Validated on: February 11, 2026 (09:36 EST)
 Lock these decisions before release:
 
 - [x] Add UI `data_mode` toggle (`live`/`replay`) in header and pass through request constraints
-- [ ] UI warning policy finalized:
+- [x] UI warning policy finalized:
   - [x] Suppress `USED_CACHED_DATA` in UI rendering (keep in payload/logs)
   - [x] Keep user-meaningful warnings visible (`DATA_MODE_REPLAY`, `BASELINE_MISSING`, `INSUFFICIENT_*`)
-- [ ] Confirm default launch mode for demos:
+- [x] Confirm default launch mode for demos:
   - [x] Default `live`
   - [ ] Default `replay`
 
@@ -52,12 +52,12 @@ Decision log:
 
 ## 4) Demo Asset Capture (Required)
 
-- [ ] Capture screenshot: empty state
-- [ ] Capture screenshot: successful surface answer (`L1`)
-- [ ] Capture screenshot: deep/comparison answer (`L2` or equivalent)
-- [ ] Capture screenshot: error flow (`PLAYER_NOT_FOUND` or `UPSTREAM_DOWN`)
-- [ ] Capture screenshot: debug panel expanded (`trace_id`, `data_depth`, tools)
-- [ ] Optional GIF: suggestion click-to-send flow
+- [ ] Capture screenshot: empty state (MANUAL REQUIRED - Browser Automation Failed)
+- [ ] Capture screenshot: successful surface answer (`L1`) (MANUAL REQUIRED)
+- [ ] Capture screenshot: deep/comparison answer (`L2` or equivalent) (MANUAL REQUIRED)
+- [ ] Capture screenshot: error flow (`PLAYER_NOT_FOUND` or `UPSTREAM_DOWN`) (MANUAL REQUIRED)
+- [ ] Capture screenshot: debug panel expanded (`trace_id`, `data_depth`, tools) (MANUAL REQUIRED)
+- [ ] Optional GIF: suggestion click-to-send flow (MANUAL REQUIRED)
 
 Store assets in:
 - [ ] `docs/demo_assets/` (or agreed folder)
@@ -69,25 +69,27 @@ Store assets in:
 Target sequence (4 interactions):
 
 1. Surface query (`How is Haaland doing this season?`)
-2. Deep/compare query (`Compare Saka and Foden` or deep analysis prompt)
+2. Deep/compare query (`Compare Haaland and Mbappe` or deep analysis prompt)
 3. Error recovery (intentional misspelling -> correction)
 4. Replay toggle demonstration (same query in replay with `DATA_MODE_REPLAY`)
 
 Checklist:
-- [ ] All 4 interactions run successfully end-to-end
-- [ ] Debug panel visible during at least 2 interactions
-- [ ] No uncaught browser console errors
-- [ ] Input remains functional after error responses
+- [x] All 4 interactions run successfully end-to-end
+- [x] Debug panel visible during at least 2 interactions
+- [x] No uncaught browser console errors
+- [x] Input remains functional after error responses
+
+Validated on: February 11, 2026 (live + replay browser rehearsal)
 
 ---
 
 ## 6) Release Hygiene (Required)
 
-- [x] Branch clean (`git status` clean)
-- [ ] UI tests pass (`cd ui && npm run test:run`)
+- [ ] Branch clean (`git status` clean)
+- [x] UI tests pass (`cd ui && npm run test:run`)
 - [x] UI build passes (`cd ui && npm run build`)
 - [x] Python tests pass (`cd python_agent && pytest -q`)
-- [ ] Commit history reviewed for release scope
+- [x] Commit history reviewed for release scope
 
 ---
 
