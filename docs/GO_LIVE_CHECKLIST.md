@@ -85,7 +85,7 @@ Validated on: February 11, 2026 (live + replay browser rehearsal)
 
 ## 6) Release Hygiene (Required)
 
-- [ ] Branch clean (`git status` clean)
+- [x] Branch clean (`git status` clean)
 - [x] UI tests pass (`cd ui && npm run test:run`)
 - [x] UI build passes (`cd ui && npm run build`)
 - [x] Python tests pass (`cd python_agent && pytest -q`)
@@ -95,29 +95,32 @@ Validated on: February 11, 2026 (live + replay browser rehearsal)
 
 ## 7) Push + Tag (Required)
 
-- [ ] Push branch to remote
-- [ ] Create annotated tag for MVP checkpoint
-  - Suggested tag: `footiq-ui-mvp-2026-02-11`
-- [ ] Share commit hashes + tag in release note
+- [x] Push branch to remote
+- [x] Create annotated tag for MVP checkpoint
+  - Tag: `footiq-ui-mvp-2026-02-11-r2`
+- [x] Share commit hashes + tag in release note
 
 Release note template:
-- Date:
-- Tag:
-- Backend commit:
-- UI commits:
+- Date: February 11, 2026
+- Tag: `footiq-ui-mvp-2026-02-11-r2`
+- Backend commit: `40e7f0b`
+- UI/docs commit: `33cbd84`
 - Known limitations:
+  - Live `/search` still unavailable on current SportsAPI entitlement; alias fallback used for known players.
+  - `NORMALIZATION_GAP` can appear for unmapped live stat IDs.
 
 ---
 
 ## 8) Rollback Notes (Required)
 
-- [ ] Previous stable tag/commit identified
-- [ ] One-command rollback path documented
-- [ ] Critical env vars documented for restart
+- [x] Previous stable tag/commit identified
+- [x] One-command rollback path documented
+- [x] Critical env vars documented for restart
 
 Rollback target:
-- Commit/tag: __________________
-- Restart commands: __________________
+- Commit/tag: `footiq-ui-mvp-2026-02-11`
+- Restart commands: `git checkout footiq-ui-mvp-2026-02-11 && cd python_agent && source venv/bin/activate && python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload` + `cd node_gateway && npm start` + `cd ui && npm run dev`
+- Critical env vars: `OPENAI_API_KEY`, `SPORTAPI_KEY`, `SPORTAPI_BASE_URL`, `VITE_API_BASE_URL`
 
 ---
 
@@ -125,10 +128,10 @@ Rollback target:
 
 - [ ] Preflight complete
 - [ ] Sign-offs complete
-- [ ] Hardening decisions locked
+- [x] Hardening decisions locked
 - [ ] Demo assets + rehearsal complete
-- [ ] Push + tag complete
-- [ ] Rollback plan documented
+- [x] Push + tag complete
+- [x] Rollback plan documented
 - [ ] Product/demo owner approval recorded
 
 Approvals:
@@ -159,4 +162,3 @@ Open follow-ups before final gate:
 
 - Confirm `/search` entitlement with SportsAPI Pro support or keep alias fallback as official MVP behavior.
 - Expand live stat type mapping to reduce `NORMALIZATION_GAP` noise.
-- Execute full 4-step demo rehearsal with UI running (`localhost:5173`).
