@@ -13,11 +13,13 @@ Date baseline:
 
 ## 1) Preflight (Required)
 
-- [ ] Python agent running (`http://127.0.0.1:8000/health` -> `ok`)
-- [ ] Node gateway running (`http://127.0.0.1:3000/health` -> `ok`)
+- [x] Python agent running (`http://127.0.0.1:8000/health` -> `ok`)
+- [x] Node gateway running (`http://127.0.0.1:3000/health` -> `ok`)
 - [ ] UI running (`http://localhost:5173`)
-- [ ] Root `.env` loaded with `OPENAI_API_KEY`
-- [ ] UI env points to Node gateway (`VITE_API_BASE_URL=http://localhost:3000`)
+- [x] Root `.env` loaded with `OPENAI_API_KEY`
+- [x] UI env points to Node gateway (`VITE_API_BASE_URL=http://localhost:3000`)
+
+Validated on: February 11, 2026 (09:36 EST)
 
 ---
 
@@ -33,18 +35,18 @@ Date baseline:
 
 Lock these decisions before release:
 
-- [ ] Add UI `data_mode` toggle (`live`/`replay`) in header and pass through request constraints
+- [x] Add UI `data_mode` toggle (`live`/`replay`) in header and pass through request constraints
 - [ ] UI warning policy finalized:
-  - [ ] Suppress `USED_CACHED_DATA` in UI rendering (keep in payload/logs)
-  - [ ] Keep user-meaningful warnings visible (`DATA_MODE_REPLAY`, `BASELINE_MISSING`, `INSUFFICIENT_*`)
+  - [x] Suppress `USED_CACHED_DATA` in UI rendering (keep in payload/logs)
+  - [x] Keep user-meaningful warnings visible (`DATA_MODE_REPLAY`, `BASELINE_MISSING`, `INSUFFICIENT_*`)
 - [ ] Confirm default launch mode for demos:
-  - [ ] Default `live`
+  - [x] Default `live`
   - [ ] Default `replay`
 
 Decision log:
-- Owner: __________________
-- Date: __________________
-- Notes: __________________
+- Owner: Ayomide
+- Date: February 11, 2026
+- Notes: `live` is default. Replay remains deterministic fallback for demos.
 
 ---
 
@@ -81,10 +83,10 @@ Checklist:
 
 ## 6) Release Hygiene (Required)
 
-- [ ] Branch clean (`git status` clean)
+- [x] Branch clean (`git status` clean)
 - [ ] UI tests pass (`cd ui && npm run test:run`)
-- [ ] UI build passes (`cd ui && npm run build`)
-- [ ] Python tests pass (`cd python_agent && pytest -q`)
+- [x] UI build passes (`cd ui && npm run build`)
+- [x] Python tests pass (`cd python_agent && pytest -q`)
 - [ ] Commit history reviewed for release scope
 
 ---
@@ -131,3 +133,28 @@ Approvals:
 - Engineering: __________________
 - Product/Demo Owner: __________________
 - Date: __________________
+
+---
+
+## 10) Validation Matrix (February 11, 2026, 09:36 EST)
+
+Live post-upgrade checks (Node gateway entrypoint):
+
+- [x] `GET /health` Python agent -> `ok`
+- [x] `GET /health` Node gateway -> `ok`
+- [x] Replay surface query -> `status:"ok"` (`How is Haaland doing this season?`)
+- [x] Live surface query (Haaland) -> `status:"ok"`
+- [x] Live surface query (Bellingham) -> `status:"ok"`
+- [x] Live compare query -> `status:"ok"` (`Compare Haaland and Mbappe`)
+- [x] Replay missing-fixture path -> expected `status:"error"` (`How is De Bruyne doing this season?`)
+
+Observed non-blocking warnings:
+
+- `SEARCH_UNAVAILABLE_USING_ALIAS` still appears in live mode, indicating `/search` endpoint is still unavailable on current account/entitlement path.
+- `NORMALIZATION_GAP` warnings for unknown live stat type IDs (e.g., `232`, `2`) persist and should be mapped in `stats_config.py` when validated.
+
+Open follow-ups before final gate:
+
+- Confirm `/search` entitlement with SportsAPI Pro support or keep alias fallback as official MVP behavior.
+- Expand live stat type mapping to reduce `NORMALIZATION_GAP` noise.
+- Execute full 4-step demo rehearsal with UI running (`localhost:5173`).
