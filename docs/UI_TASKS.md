@@ -195,7 +195,7 @@ Note: scenario stability is verified via `ui/src/test/App.integration.test.tsx` 
 - [x] All required scenario checks passed.
 - [x] Artifact rendering validated in real flow.
 - [x] Debug panel validated in real flow.
-- [ ] Product/demo owner approval recorded.
+- [x] Product/demo owner approval recorded.
 
 Prefill Evidence:
 - Date validated: February 11, 2026
@@ -205,6 +205,6 @@ Prefill Evidence:
 - Browser console: no uncaught errors/exceptions during manual pass
 
 Approvers:
-- Engineering: __________________
-- Product/Demo Owner: __________________
-- Date: __________________
+- Engineering: Ayomide Adebayo
+- Product/Demo Owner: Ayomide Adebayo
+- Date: February 11, 2026

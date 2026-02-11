@@ -13,12 +13,14 @@ from pydantic import BaseModel, Field
 from typing import Optional
 import time
 import os
+import logging
 
 app = FastAPI(title="FootIQ Agent", version="1.1")
 
 SCHEMA_VERSION = "1.1"
 DATA_MODE = os.getenv("DATA_MODE", "live")
 MAX_HISTORY = 10
+logger = logging.getLogger("footiq.main")
 
 
 # ─── Request Validation Models ───────────────────────────────────────────────
@@ -114,6 +116,40 @@ def make_success_response(trace_id: str, session_id: str, answer: str,
         "suggestions": suggestions or [],
         "error": None,
     }
+
+
+def _sanitize_contract_error_message(code: str, message: str) -> str:
+    """Prevent raw upstream errors/URLs from leaking into UI-facing messages."""
+    msg = (message or "").strip()
+    lower = msg.lower()
+
+    if code == "UPSTREAM_TIMEOUT":
+        return "The analysis service timed out. Please try again."
+
+    if code == "UPSTREAM_DOWN":
+        auth_markers = (
+            "401",
+            "403",
+            "unauthorized",
+            "forbidden",
+            "api key",
+            "rapidapi",
+        )
+        transport_markers = (
+            "http://",
+            "https://",
+            "client error",
+            "server error",
+            "connection",
+            "timed out",
+        )
+        if "openai_api_key" in lower:
+            return "The analysis service is not configured right now. Please try again later."
+        if any(token in lower for token in auth_markers + transport_markers):
+            return "Live data source is unavailable right now. Try replay mode or retry later."
+        return "A dependent service is unavailable right now. Please retry shortly."
+
+    return msg or "Unexpected error."
 
 
 # ─── Main Endpoint ───────────────────────────────────────────────────────────
@@ -283,23 +319,25 @@ async def agent_query(request: Request):
         ))
 
     except ContractError as e:
+        public_message = _sanitize_contract_error_message(e.code, e.message)
+        if public_message != e.message:
+            logger.warning("[%s] Sanitized %s error for client response", trace_id, e.code)
         return JSONResponse(content=make_error_response(
             trace_id=trace_id,
             session_id=session_id,
             code=e.code,
-            message=e.message,
+            message=public_message,
             options=e.options,
             warnings=warnings,
         ))
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logger.exception("[%s] Unhandled agent error", trace_id)
         return JSONResponse(content=make_error_response(
             trace_id=trace_id,
             session_id=session_id,
             code="UPSTREAM_DOWN",
-            message=f"Internal agent error: {str(e)}",
+            message="The analysis service is temporarily unavailable. Please try again shortly.",
             warnings=warnings,
         ))
 

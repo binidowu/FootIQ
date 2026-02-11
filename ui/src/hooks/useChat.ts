@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
-import type { ChatMessage, QueryResponse } from "../types/contract";
+import type { ChatMessage, QueryResponse, QueryRequest } from "../types/contract";
 import { queryAgent } from "../api/client";
+
+export type DataMode = "live" | "replay";
 
 function uid(): string {
     return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -15,7 +17,7 @@ export function useChat() {
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState(() => newSessionId());
     const [lastTraceId, setLastTraceId] = useState<string | null>(null);
-
+    const [dataMode, setDataMode] = useState<DataMode>("live");
 
     const send = useCallback(
         async (text: string) => {
@@ -33,10 +35,12 @@ export function useChat() {
             setIsLoading(true);
 
             try {
-                const response: QueryResponse = await queryAgent({
+                const req: QueryRequest = {
                     session_id: sessionId,
                     query: trimmed,
-                });
+                    constraints: { data_mode: dataMode },
+                };
+                const response: QueryResponse = await queryAgent(req);
 
                 setLastTraceId(response.trace_id);
 
@@ -68,7 +72,7 @@ export function useChat() {
                 setIsLoading(false);
             }
         },
-        [isLoading, sessionId]
+        [isLoading, sessionId, dataMode]
     );
 
     const resetSession = useCallback(() => {
@@ -82,6 +86,8 @@ export function useChat() {
         isLoading,
         sessionId,
         lastTraceId,
+        dataMode,
+        setDataMode,
         send,
         resetSession,
     };

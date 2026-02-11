@@ -5,7 +5,7 @@ import EmptyState from "./components/EmptyState";
 import "./index.css";
 
 export default function App() {
-  const { messages, isLoading, sessionId, send, resetSession } = useChat();
+  const { messages, isLoading, sessionId, dataMode, setDataMode, send, resetSession } = useChat();
   const showEmpty = messages.length === 0 && !isLoading;
 
   return (
@@ -17,6 +17,26 @@ export default function App() {
           <h1 className="header-title">FootIQ</h1>
         </div>
         <div className="header-right">
+          {/* Data Mode Toggle */}
+          <div className="mode-toggle" id="mode-toggle">
+            <button
+              className={`mode-btn ${dataMode === "live" ? "active" : ""}`}
+              onClick={() => setDataMode("live")}
+              title="Live mode — real API calls"
+            >
+              <span className="mode-dot live" />
+              Live
+            </button>
+            <button
+              className={`mode-btn ${dataMode === "replay" ? "active" : ""}`}
+              onClick={() => setDataMode("replay")}
+              title="Replay mode — cached fixtures only"
+            >
+              <span className="mode-dot replay" />
+              Replay
+            </button>
+          </div>
+
           <span className="session-badge" title={`Session: ${sessionId}`}>
             {sessionId.slice(0, 12)}…
           </span>
