@@ -10,6 +10,7 @@ All values are pre-calculated from the fixtures for deterministic assertions.
 
 import pytest
 import asyncio
+import data_tools
 from data_tools import (
     search_entity, get_athlete_games, get_game_lineup,
     clear_cache, _normalize_games, _normalize_lineup,
@@ -57,6 +58,49 @@ async def test_search_entity_replay_ambiguous():
     names = [r["entity"]["name"] for r in results]
     assert "Bukayo Saka" in names
     assert "Yaya Saka" in names
+
+
+@pytest.mark.asyncio
+async def test_search_entity_replay_qmissing_empty_results():
+    """Replay fixture with empty results should return empty data, not fixture error."""
+    result = await search_entity("qmissing", data_mode="replay")
+    assert result.error is None
+    assert result.data is not None
+    assert result.data["results"] == []
+
+
+@pytest.mark.asyncio
+async def test_search_entity_replay_qmulti_ambiguous_fixture():
+    """Deterministic ambiguous replay fixture should return >1 entities."""
+    result = await search_entity("qmulti", data_mode="replay")
+    assert result.error is None
+    assert len(result.data["results"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_search_entity_replay_full_name_fallback_haaland():
+    """Full name should fallback to surname fixture in replay mode."""
+    result = await search_entity("Erling Haaland", data_mode="replay")
+    assert result.error is None
+    assert result.data is not None
+    assert len(result.data["results"]) == 1
+    warning = next((w for w in result.warnings if w["code"] == "DATA_MODE_REPLAY"), None)
+    assert warning is not None
+    assert warning["details"]["fixture"] == "search_entity__haaland.json"
+
+
+@pytest.mark.asyncio
+async def test_search_entity_replay_full_name_fallback_saka():
+    """Full name should fallback to surname fixture in replay mode."""
+    result = await search_entity("Bukayo Saka", data_mode="replay")
+    assert result.error is None
+    assert result.data is not None
+    assert len(result.data["results"]) == 2
+    names = [r["entity"]["name"] for r in result.data["results"]]
+    assert "Bukayo Saka" in names
+    warning = next((w for w in result.warnings if w["code"] == "DATA_MODE_REPLAY"), None)
+    assert warning is not None
+    assert warning["details"]["fixture"] == "search_entity__saka.json"
 
 
 @pytest.mark.asyncio
@@ -118,6 +162,18 @@ async def test_get_athlete_games_replay():
     result = await get_athlete_games(939180, last_n=5, data_mode="replay")
     assert result.error is None
     assert len(result.data["games"]) == 5
+
+
+@pytest.mark.asyncio
+async def test_get_athlete_games_replay_saka_fixture_available():
+    """Saka replay fixture should be available and normalized."""
+    result = await get_athlete_games(934235, last_n=5, data_mode="replay")
+    assert result.error is None
+    assert len(result.data["games"]) == 5
+    g1 = result.data["games"][0]
+    assert g1["game_id"] == 21001
+    assert g1["metrics"]["goals"] == 1
+    assert g1["metrics"]["minutes_played"] == 90
 
 
 @pytest.mark.asyncio
@@ -217,6 +273,15 @@ async def test_get_game_lineup_position():
     assert result.data["position"] == "ST"
 
 
+@pytest.mark.asyncio
+async def test_get_game_lineup_saka_replay():
+    """Saka lineup fixture should load in replay mode."""
+    result = await get_game_lineup(934235, 21001, data_mode="replay")
+    assert result.error is None
+    assert result.data["position"] == "RW"
+    assert result.data["metrics"]["expected_goals"] == 0.65
+
+
 # ─── extract_metric_value (unit tests) ───────────────────────────────────────
 
 def test_extract_present_value():
@@ -290,3 +355,21 @@ async def test_replay_mode_emits_warning():
     result = await search_entity("haaland", data_mode="replay")
     warning_codes = [w["code"] for w in result.warnings]
     assert "DATA_MODE_REPLAY" in warning_codes
+
+
+@pytest.mark.asyncio
+async def test_replay_mode_never_calls_api(monkeypatch):
+    """Replay mode should never call the upstream API client."""
+    async def _boom(*args, **kwargs):
+        raise AssertionError("Replay mode must not call _api_request")
+
+    monkeypatch.setattr(data_tools, "_api_request", _boom)
+
+    r1 = await search_entity("haaland", data_mode="replay")
+    assert r1.error is None
+
+    r2 = await get_athlete_games(939180, last_n=5, data_mode="replay")
+    assert r2.error is None
+
+    r3 = await get_game_lineup(939180, 11001, data_mode="replay")
+    assert r3.error is None

@@ -1,0 +1,79 @@
+{
+    "games": [
+        {
+            "game_id": 11001,
+            "date": "2026-02-08",
+            "home_team": "Manchester City",
+            "away_team": "Liverpool",
+            "score": "2-1",
+            "statistics": [
+                {"type": 10, "value": 8.2},
+                {"type": 21, "value": 2},
+                {"type": 22, "value": 0},
+                {"type": 11, "value": 90},
+                {"type": 14, "value": 0},
+                {"type": 15, "value": 0}
+            ]
+        },
+        {
+            "game_id": 11002,
+            "date": "2026-02-01",
+            "home_team": "Chelsea",
+            "away_team": "Manchester City",
+            "score": "0-3",
+            "statistics": [
+                {"type": 10, "value": 9.1},
+                {"type": 21, "value": 2},
+                {"type": 22, "value": 1},
+                {"type": 11, "value": 90},
+                {"type": 14, "value": 0},
+                {"type": 15, "value": 0}
+            ]
+        },
+        {
+            "game_id": 11003,
+            "date": "2026-01-25",
+            "home_team": "Manchester City",
+            "away_team": "Everton",
+            "score": "1-0",
+            "statistics": [
+                {"type": 10, "value": 7.4},
+                {"type": 21, "value": 0},
+                {"type": 22, "value": 1},
+                {"type": 11, "value": 78},
+                {"type": 14, "value": 1},
+                {"type": 15, "value": 0}
+            ]
+        },
+        {
+            "game_id": 11004,
+            "date": "2026-01-18",
+            "home_team": "Tottenham",
+            "away_team": "Manchester City",
+            "score": "1-2",
+            "statistics": [
+                {"type": 10, "value": 7.8},
+                {"type": 21, "value": 1},
+                {"type": 22, "value": 0},
+                {"type": 11, "value": 85},
+                {"type": 14, "value": 0},
+                {"type": 15, "value": 0}
+            ]
+        },
+        {
+            "game_id": 11005,
+            "date": "2026-01-11",
+            "home_team": "Manchester City",
+            "away_team": "West Ham",
+            "score": "0-0",
+            "statistics": [
+                {"type": 10, "value": 6.3},
+                {"type": 21, "value": 0},
+                {"type": 22, "value": 0},
+                {"type": 11, "value": 90},
+                {"type": 14, "value": 0},
+                {"type": 15, "value": 0}
+            ]
+        }
+    ]
+}

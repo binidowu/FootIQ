@@ -1,0 +1,44 @@
+{
+    "results": [
+        {
+            "entity": {
+                "id": 771001,
+                "name": "Alpha Striker",
+                "slug": "alpha-striker",
+                "shortName": "A. Striker",
+                "team": {
+                    "id": 5001,
+                    "name": "Test FC",
+                    "slug": "test-fc"
+                },
+                "position": "F",
+                "country": {
+                    "name": "England",
+                    "alpha2": "GB"
+                }
+            },
+            "type": "player",
+            "score": 61.1
+        },
+        {
+            "entity": {
+                "id": 771002,
+                "name": "Beta Winger",
+                "slug": "beta-winger",
+                "shortName": "B. Winger",
+                "team": {
+                    "id": 5002,
+                    "name": "Mock United",
+                    "slug": "mock-united"
+                },
+                "position": "F",
+                "country": {
+                    "name": "France",
+                    "alpha2": "FR"
+                }
+            },
+            "type": "player",
+            "score": 58.4
+        }
+    ]
+}

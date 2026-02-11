@@ -9,12 +9,19 @@ app.use(express.json());
 app.use('/static/plots', express.static(path.join(__dirname, 'public', 'plots')));
 
 // --- Configuration ---
+function msFromEnv(name, fallbackMs) {
+    const raw = process.env[name];
+    if (!raw) return fallbackMs;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallbackMs;
+}
+
 const PYTHON_AGENT_URL = process.env.PYTHON_AGENT_URL || 'http://127.0.0.1:8000';
 const PORT = process.env.PORT || 3000;
-const SESSION_TTL_MS = 30 * 60 * 1000;       // 30 minutes
-const SESSION_CLEANUP_MS = 5 * 60 * 1000;     // every 5 minutes
-const PLOT_CLEANUP_MS = 60 * 60 * 1000;       // every 60 minutes
-const PLOT_MAX_AGE_MS = 2 * 60 * 60 * 1000;   // 2 hours
+const SESSION_TTL_MS = msFromEnv('SESSION_TTL_MS', 30 * 60 * 1000);        // 30 minutes
+const SESSION_CLEANUP_MS = msFromEnv('SESSION_CLEANUP_MS', 5 * 60 * 1000); // every 5 minutes
+const PLOT_CLEANUP_MS = msFromEnv('PLOT_CLEANUP_MS', 60 * 60 * 1000);       // every 60 minutes
+const PLOT_MAX_AGE_MS = msFromEnv('PLOT_MAX_AGE_MS', 2 * 60 * 60 * 1000);   // 2 hours
 const MAX_HISTORY = 10;
 
 // --- Session Store ---
@@ -99,10 +106,11 @@ app.post('/query', async (req, res) => {
 
     const traceId = generateTraceId();
     const session = getOrCreateSession(session_id);
+    const trimmedQuery = query.trim();
 
-    // Add user message to history
-    session.history.push({ role: 'user', content: query });
-    session.history = truncateHistory(session.history);
+    // Contract semantics: send only prior conversation in history.
+    const priorHistory = truncateHistory(session.history);
+
 
     // Build the contract-compliant request envelope
     const requestEnvelope = {
@@ -110,10 +118,10 @@ app.post('/query', async (req, res) => {
         trace_id: traceId,
         session: {
             session_id: session.session_id,
-            history: session.history,
+            history: priorHistory,
             memory_summary: session.memory_summary,
         },
-        query: query.trim(),
+        query: trimmedQuery,
         constraints: {
             data_mode: constraints?.data_mode || 'live',
             max_depth: constraints?.max_depth || 'auto',
@@ -134,17 +142,23 @@ app.post('/query', async (req, res) => {
         const data = await agentResponse.json();
 
         // Update session from Python's response
+        session.history.push({ role: 'user', content: trimmedQuery });
         if (data.session?.updated_summary) {
             session.memory_summary = data.session.updated_summary;
         }
         if (data.output?.answer) {
             session.history.push({ role: 'assistant', content: data.output.answer });
-            session.history = truncateHistory(session.history);
         }
+        session.history = truncateHistory(session.history);
 
         return res.json(data);
     } catch (err) {
         console.error(`[${traceId}] Python agent error:`, err.message);
+
+        const fallbackAnswer = 'The analysis service is currently unavailable. Please try again shortly.';
+        session.history.push({ role: 'user', content: trimmedQuery });
+        session.history.push({ role: 'assistant', content: fallbackAnswer });
+        session.history = truncateHistory(session.history);
 
         // Return a contract-compliant error envelope
         return res.json({
@@ -153,7 +167,7 @@ app.post('/query', async (req, res) => {
             status: 'error',
             session: { session_id: session.session_id, updated_summary: session.memory_summary },
             output: {
-                answer: 'The analysis service is currently unavailable. Please try again shortly.',
+                answer: fallbackAnswer,
                 artifacts: [],
                 sources: [],
             },

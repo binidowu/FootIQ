@@ -1,5 +1,9 @@
 # FootIQ API Contract (v1.1)
 
+> [!IMPORTANT]
+> **Status:** FROZEN for the UI integration window (as of 2026-02-11).  
+> Any changes must be backward-compatible or explicitly versioned.
+
 This document is the **source of truth** for the integration between:
 - **Node.js Gateway (Orchestrator)** and
 - **Python Agent Service (Brain)**
@@ -232,6 +236,8 @@ When `status:"error"`, `error.code` must be one of:
 | `UPSTREAM_DOWN` | Upstream unreachable | Offer replay / cached-only |
 | `ARTIFACT_WRITE_FAILED` | Plot write failed | Answer without artifact + warning |
 
+For Python agent runtime dependencies, missing LLM credentials (e.g. unset `OPENAI_API_KEY`) MUST map to `UPSTREAM_DOWN`.
+
 > [!NOTE]
 > `NORMALIZATION_GAP` is a **warning-only** condition (see Section 3). An unmapped stat ID produces partial results with `status:"ok"`, not an error.
 
@@ -354,3 +360,25 @@ When `constraints.data_mode: "replay"`:
 **Request (Node → Python):** `schema_version`, `trace_id`, `session`, `query`, `constraints`
 
 **Response (Python → Node):** `schema_version`, `trace_id`, `status`, `session`, `output`, `metadata`, `warnings`, `suggestions`, `error`
+
+**Local Python Smoke Test (contract-compliant body):**
+
+```bash
+curl -s -X POST http://localhost:8000/agent/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "schema_version": "1.1",
+    "trace_id": "ftiq_local_20260211_120000",
+    "session": {
+      "session_id": "test_session",
+      "history": [],
+      "memory_summary": null
+    },
+    "query": "How is Haaland doing?",
+    "constraints": {
+      "data_mode": "replay",
+      "max_depth": "auto",
+      "allow_live_fetch": true
+    }
+  }'
+```

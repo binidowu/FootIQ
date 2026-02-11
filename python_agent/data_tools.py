@@ -16,6 +16,7 @@ import json
 import time
 import os
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field
@@ -118,6 +119,38 @@ def _make_replay_warning(fixture: Optional[str] = None, source: str = "fixture")
     }
 
 
+def _search_fixture_candidates(query: str) -> list[str]:
+    """
+    Build fallback fixture candidates for replay-mode search.
+
+    This keeps replay stable when upstream prompts expand a short query
+    (e.g. "haaland" -> "erling haaland").
+    """
+    cleaned = re.sub(r"[^a-z0-9\\s_-]", " ", query.lower())
+    normalized = " ".join(cleaned.split())
+    tokens = [t for t in normalized.split(" ") if t]
+
+    candidates = []
+    if normalized:
+        candidates.append(f"search_entity__{normalized}.json")
+        candidates.append(f"search_entity__{normalized.replace(' ', '-')}.json")
+        candidates.append(f"search_entity__{normalized.replace(' ', '_')}.json")
+
+    if len(tokens) > 1:
+        # Prefer last token (surname) as first fallback.
+        candidates.append(f"search_entity__{tokens[-1]}.json")
+        candidates.append(f"search_entity__{tokens[0]}.json")
+
+    # De-duplicate while preserving order.
+    deduped = []
+    seen = set()
+    for name in candidates:
+        if name not in seen:
+            seen.add(name)
+            deduped.append(name)
+    return deduped
+
+
 # ─── API Client ───────────────────────────────────────────────────────────────
 
 async def _api_request(endpoint: str, params: dict = None) -> dict:
@@ -179,18 +212,26 @@ async def search_entity(
 
     # Replay mode
     if data_mode == "replay":
-        fixture_name = f"search_entity__{query.lower().strip()}.json"
-        fixture_data = _load_fixture(fixture_name)
+        fixture_name = None
+        fixture_data = None
+        for candidate in _search_fixture_candidates(query):
+            fixture_data = _load_fixture(candidate)
+            if fixture_data is not None:
+                fixture_name = candidate
+                break
+
         if fixture_data is None:
+            attempted = _search_fixture_candidates(query)
             return ToolResult(
                 data=None,
-                error=f"Replay fixture not found: {fixture_name}",
+                error=f"Replay fixture not found: {attempted[0] if attempted else query}",
                 warnings=[{
                     "code": "DATA_MODE_REPLAY",
-                    "message": f"Fixture missing: {fixture_name}",
-                    "details": {"fixture": fixture_name, "source": "fixture"},
+                    "message": f"Fixture missing for query '{query}'",
+                    "details": {"attempted_fixtures": attempted, "source": "fixture"},
                 }],
             )
+
         _cache.set(cache_key, fixture_data)
         return ToolResult(
             data=fixture_data,

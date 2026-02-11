@@ -238,29 +238,70 @@ async def agent_query(request: Request):
             "details": {},
         })
 
-    # ── Mock response (Phase 1 placeholder) ──
-    # This will be replaced by real agent logic in Phase 2-4.
+    # ─── Real Agent Integration ──
+    from football_agent import run_agent, ContractError
 
-    elapsed_ms = int((time.time() - start) * 1000)
+    try:
+        # Map history list of dicts from pydantic to list of dicts for agent
+        agent_history = body.get("session", {}).get("history", [])
 
-    return JSONResponse(content=make_success_response(
-        trace_id=trace_id,
-        session_id=session_id,
-        answer=(
-            f"[Mock Response] Received query: \"{query}\". "
-            f"This is a Phase 1 stub. The agent pipeline (data_tools → quant_tools → "
-            f"football_agent) will replace this response."
-        ),
-        tools_invoked=[
-            {"tool": "mock_echo", "duration_ms": elapsed_ms, "cache_hit": False},
-        ],
-        duration_ms=elapsed_ms,
-        data_depth="L1",
-        reasoning_mode="DATA_ONLY",
-        warnings=warnings,
-        suggestions=["Try: How is Haaland doing?", "Try: Compare Saka and Foden"],
-        updated_summary=f"User asked: {query[:200]}",
-    ))
+        allow_live = body.get("constraints", {}).get("allow_live_fetch", True)
+        
+        result = await run_agent(
+            query=query,
+            session_id=session_id,
+            trace_id=trace_id,
+            history=agent_history,
+            memory_summary=body.get("session", {}).get("memory_summary"),
+            data_mode=data_mode,
+            max_depth=max_depth,
+            allow_live_fetch=allow_live,
+        )
+
+        elapsed_ms = int((time.time() - start) * 1000)
+        
+        # Combine protocol warnings (like schema mismatch) with agent warnings
+        agent_warnings = result.warnings if isinstance(result.warnings, list) else []
+        combined_warnings = warnings + agent_warnings
+
+        suggestions = result.suggestions if isinstance(result.suggestions, list) else []
+        suggestions = suggestions[:3]
+
+        return JSONResponse(content=make_success_response(
+            trace_id=trace_id,
+            session_id=session_id,
+            answer=result.answer,
+            tools_invoked=result.tools_invoked or [],
+            duration_ms=elapsed_ms,
+            data_depth=result.data_depth,
+            reasoning_mode=result.reasoning_mode,
+            artifacts=result.artifacts,
+            sources=result.sources,
+            warnings=combined_warnings,
+            suggestions=suggestions,
+            updated_summary=result.updated_summary,
+        ))
+
+    except ContractError as e:
+        return JSONResponse(content=make_error_response(
+            trace_id=trace_id,
+            session_id=session_id,
+            code=e.code,
+            message=e.message,
+            options=e.options,
+            warnings=warnings,
+        ))
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(content=make_error_response(
+            trace_id=trace_id,
+            session_id=session_id,
+            code="UPSTREAM_DOWN",
+            message=f"Internal agent error: {str(e)}",
+            warnings=warnings,
+        ))
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────
