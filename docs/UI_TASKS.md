@@ -21,10 +21,10 @@ Status rule:
 ## 1) Project Setup
 
 ### Tasks
-- [ ] Scaffold React + Vite app for FootIQ UI.
-- [ ] Add TypeScript support.
-- [ ] Add lint/format baseline.
-- [ ] Add env wiring for API base URL.
+- [x] Scaffold React + Vite app for FootIQ UI.
+- [x] Add TypeScript support.
+- [x] Add lint/format baseline.
+- [x] Add env wiring for API base URL.
 
 ### Acceptance Criteria
 - `npm run dev` starts successfully.
@@ -36,9 +36,9 @@ Status rule:
 ## 2) Contract Types & API Client
 
 ### Tasks
-- [ ] Define strict request/response types from `API_CONTRACT.md`.
-- [ ] Build `query()` API client for Node `/query`.
-- [ ] Enforce runtime guards for required envelope fields.
+- [x] Define strict request/response types from `API_CONTRACT.md`.
+- [x] Build `query()` API client for Node `/query`.
+- [x] Enforce runtime guards for required envelope fields.
 
 ### Acceptance Criteria
 - UI rejects malformed API responses gracefully.
@@ -50,9 +50,9 @@ Status rule:
 ## 3) Session Loop
 
 ### Tasks
-- [ ] Create `session_id` on first load and persist in browser storage.
-- [ ] Reuse same `session_id` for subsequent requests.
-- [ ] Reset session option (new session id) for demo control.
+- [x] Create `session_id` on first load and persist in browser storage.
+- [x] Reuse same `session_id` for subsequent requests.
+- [x] Reset session option (new session id) for demo control.
 
 ### Acceptance Criteria
 - Sequential queries preserve context.
@@ -63,9 +63,9 @@ Status rule:
 ## 4) Chat UI
 
 ### Tasks
-- [ ] Build message list (user/assistant/error states).
-- [ ] Build composer with submit + loading state.
-- [ ] Disable double-submit while request is active.
+- [x] Build message list (user/assistant/error states).
+- [x] Build composer with submit + loading state.
+- [x] Disable double-submit while request is active.
 
 ### Acceptance Criteria
 - User can send query, see pending state, receive response.
@@ -76,9 +76,9 @@ Status rule:
 ## 5) Markdown Renderer (Primary Answer Surface)
 
 ### Tasks
-- [ ] Render `output.answer` with `react-markdown` + `remark-gfm`.
-- [ ] Enable GitHub-flavored tables, lists, and links.
-- [ ] Sanitize markdown output (safe rendering policy).
+- [x] Render `output.answer` with `react-markdown` + `remark-gfm`.
+- [x] Enable GitHub-flavored tables, lists, and links.
+- [x] Sanitize markdown output (safe rendering policy).
 
 ### Acceptance Criteria
 - Markdown tables render cleanly in answer panel.
@@ -90,10 +90,10 @@ Status rule:
 ## 6) Artifact Rendering
 
 ### Tasks
-- [ ] Build `ArtifactPanel` for structured artifacts in `output.artifacts`.
-- [ ] Render `plot`/`heatmap` URLs as images.
-- [ ] Render `stat_table` data as table component.
-- [ ] Detect image links inside markdown answer and surface inline or in panel.
+- [x] Build `ArtifactPanel` for structured artifacts in `output.artifacts`.
+- [x] Render `plot`/`heatmap` URLs as images.
+- [x] Render `stat_table` data as table component.
+- [x] Detect image links inside markdown answer and surface inline or in panel.
 
 ### Render Precedence
 1. `output.artifacts` (structured artifacts)
@@ -110,10 +110,10 @@ Status rule:
 ## 7) Warnings, Errors, Suggestions
 
 ### Tasks
-- [ ] Render warnings as non-blocking chips/banners.
-- [ ] Render error block for `status:"error"` with code + message.
-- [ ] Render `suggestions` as quick-action buttons.
-- [ ] On suggestion click, auto-submit that text.
+- [x] Render warnings as non-blocking chips/banners.
+- [x] Render error block for `status:"error"` with code + message.
+- [x] Render `suggestions` as quick-action buttons.
+- [x] On suggestion click, auto-submit that text.
 
 ### Acceptance Criteria
 - Warning codes are visible and readable.
@@ -125,8 +125,8 @@ Status rule:
 ## 8) Debug Panel (Demo Critical)
 
 ### Tasks
-- [ ] Add collapsible debug panel per response.
-- [ ] Display:
+- [x] Add collapsible debug panel per response.
+- [x] Display:
   - `trace_id`
   - `metadata.data_depth` (`L1`/`L2`)
   - `metadata.reasoning_mode`
@@ -142,10 +142,10 @@ Status rule:
 ## 9) UX States
 
 ### Tasks
-- [ ] Empty state with example prompts.
-- [ ] Loading skeleton/state while waiting.
-- [ ] Retry affordance for transient failures.
-- [ ] Mobile responsiveness pass.
+- [x] Empty state with example prompts.
+- [x] Loading skeleton/state while waiting.
+- [x] Retry affordance for transient failures.
+- [x] Mobile responsiveness pass.
 
 ### Acceptance Criteria
 - Works smoothly at common mobile widths.
@@ -156,22 +156,23 @@ Status rule:
 ## 10) Integration Test Matrix (UI)
 
 ### Tasks
-- [ ] Mocked client tests for major contract scenarios.
+- [x] Mocked client tests for major contract scenarios.
 - [ ] One manual end-to-end pass against local Node service.
 
 ### Required Scenario Coverage
-- [ ] `status:"ok"` surface response
-- [ ] `status:"ok"` deep response with artifact
-- [ ] `INSUFFICIENT_CONTEXT`
-- [ ] `PLAYER_NOT_FOUND`
-- [ ] `AMBIGUOUS_ENTITY`
-- [ ] `UPSTREAM_DOWN`
-- [ ] Replay warnings visible
-- [ ] Suggestions quick-send flow
+- [x] `status:"ok"` surface response
+- [x] `status:"ok"` deep response with artifact
+- [x] `INSUFFICIENT_CONTEXT`
+- [x] `PLAYER_NOT_FOUND`
+- [x] `AMBIGUOUS_ENTITY`
+- [x] `UPSTREAM_DOWN`
+- [x] Replay warnings visible
+- [x] Suggestions quick-send flow
 
 ### Acceptance Criteria
 - Each scenario produces stable UI output.
 - No uncaught exceptions in browser console.
+Note: scenario stability is verified via `ui/src/test/App.integration.test.tsx` (7/7 passing). Browser-console check remains tied to manual E2E.
 
 ---
 
