@@ -95,10 +95,13 @@ Validated on: February 11, 2026 (live + replay browser rehearsal)
 
 ## 7) Push + Tag (Required)
 
-- [x] Push branch to remote
+- [ ] Push branch to remote
 - [x] Create annotated tag for MVP checkpoint
   - Tag: `footiq-ui-mvp-2026-02-11-r2`
 - [x] Share commit hashes + tag in release note
+
+Push status note:
+- Remote push blocked in this execution environment (`Could not resolve host: github.com`).
 
 Release note template:
 - Date: February 11, 2026
@@ -130,7 +133,7 @@ Rollback target:
 - [ ] Sign-offs complete
 - [x] Hardening decisions locked
 - [ ] Demo assets + rehearsal complete
-- [x] Push + tag complete
+- [ ] Push + tag complete
 - [x] Rollback plan documented
 - [ ] Product/demo owner approval recorded
 
