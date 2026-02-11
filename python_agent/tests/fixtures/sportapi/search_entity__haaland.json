@@ -1,0 +1,24 @@
+{
+    "results": [
+        {
+            "entity": {
+                "id": 939180,
+                "name": "Erling Haaland",
+                "slug": "erling-haaland",
+                "shortName": "E. Haaland",
+                "team": {
+                    "id": 17,
+                    "name": "Manchester City",
+                    "slug": "manchester-city"
+                },
+                "position": "F",
+                "country": {
+                    "name": "Norway",
+                    "alpha2": "NO"
+                }
+            },
+            "type": "player",
+            "score": 98.5
+        }
+    ]
+}

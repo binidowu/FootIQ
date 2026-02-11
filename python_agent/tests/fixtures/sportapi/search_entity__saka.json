@@ -1,0 +1,44 @@
+{
+    "results": [
+        {
+            "entity": {
+                "id": 934235,
+                "name": "Bukayo Saka",
+                "slug": "bukayo-saka",
+                "shortName": "B. Saka",
+                "team": {
+                    "id": 42,
+                    "name": "Arsenal",
+                    "slug": "arsenal"
+                },
+                "position": "F",
+                "country": {
+                    "name": "England",
+                    "alpha2": "GB"
+                }
+            },
+            "type": "player",
+            "score": 96.2
+        },
+        {
+            "entity": {
+                "id": 991002,
+                "name": "Yaya Saka",
+                "slug": "yaya-saka",
+                "shortName": "Y. Saka",
+                "team": {
+                    "id": 1681,
+                    "name": "RC Strasbourg",
+                    "slug": "rc-strasbourg"
+                },
+                "position": "M",
+                "country": {
+                    "name": "France",
+                    "alpha2": "FR"
+                }
+            },
+            "type": "player",
+            "score": 41.0
+        }
+    ]
+}

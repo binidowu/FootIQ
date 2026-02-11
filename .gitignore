@@ -1,6 +1,22 @@
+# Dependencies
 node_modules/
 venv/
 .venv/
+
+# Python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# OS
 .DS_Store
+
+# TestSprite (fully auto-generated)
+testsprite_tests/
+
+# Env & secrets
+.env
+.env.*
+
+# Plot artifacts (generated at runtime)
+node_gateway/public/plots/
