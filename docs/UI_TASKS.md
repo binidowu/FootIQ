@@ -157,7 +157,7 @@ Status rule:
 
 ### Tasks
 - [x] Mocked client tests for major contract scenarios.
-- [ ] One manual end-to-end pass against local Node service.
+- [x] One manual end-to-end pass against local Node service.
 
 ### Required Scenario Coverage
 - [x] `status:"ok"` surface response
@@ -172,16 +172,16 @@ Status rule:
 ### Acceptance Criteria
 - Each scenario produces stable UI output.
 - No uncaught exceptions in browser console.
-Note: scenario stability is verified via `ui/src/test/App.integration.test.tsx` (7/7 passing). Browser-console check remains tied to manual E2E.
+Note: scenario stability is verified via `ui/src/test/App.integration.test.tsx` (7/7 passing). Manual E2E pass completed with zero browser console errors.
 
 ---
 
 ## 11) Documentation
 
 ### Tasks
-- [ ] Add `README` section: run commands, env vars, API assumptions.
-- [ ] Add known limitations list for MVP.
-- [ ] Add screenshot/gif checklist for demo prep.
+- [x] Add `README` section: run commands, env vars, API assumptions.
+- [x] Add known limitations list for MVP.
+- [x] Add screenshot/gif checklist for demo prep.
 
 ### Acceptance Criteria
 - New team member can run UI in under 5 minutes.
@@ -191,11 +191,18 @@ Note: scenario stability is verified via `ui/src/test/App.integration.test.tsx` 
 
 ## 12) UI Sign-Off Gate
 
-- [ ] Contract compliance verified in UI.
-- [ ] All required scenario checks passed.
-- [ ] Artifact rendering validated in real flow.
-- [ ] Debug panel validated in real flow.
+- [x] Contract compliance verified in UI.
+- [x] All required scenario checks passed.
+- [x] Artifact rendering validated in real flow.
+- [x] Debug panel validated in real flow.
 - [ ] Product/demo owner approval recorded.
+
+Prefill Evidence:
+- Date validated: February 11, 2026
+- Full stack path: Python `:8000` -> Node `:3000` -> UI `:5173`
+- Debug sample observed: `trace_id=ftiq_b7af_20260211062718`, `data_depth=L1`, `reasoning_mode=DATA_ONLY`
+- Error path validated: `UPSTREAM_DOWN` rendered with functional post-error input
+- Browser console: no uncaught errors/exceptions during manual pass
 
 Approvers:
 - Engineering: __________________
