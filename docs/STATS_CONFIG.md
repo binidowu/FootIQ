@@ -10,7 +10,7 @@ Every metric the system can reason about must be declared here. If it's not in t
 
 ### Why a Static Metric Map?
 
-SportsAPIPro returns statistics as arrays of `{type: <int>, value: <num>}`. Without a registry, the agent would need to guess what `type: 42` means at runtime. This map provides:
+SportsAPIPro returns statistics as arrays of `{type: <int>, value: <num>}`. Without a registry, the agent would need to guess what each `type` means at runtime. This map provides:
 
 - **Human-readable names** for LLM prompts and UI
 - **Type safety** (int vs float vs percentage)
@@ -35,9 +35,9 @@ These are returned in every `get_athlete_games` response.
 | API Type ID | Metric Key | Display Name | Data Type | Unit | Missing Semantics | Per-90 Rule | Notes |
 |-------------|-----------|--------------|-----------|------|-------------------|-------------|-------|
 | 10 | `rating` | Match Rating | float | 0–10 scale | `missing` | N/A (already per-game) | SofaScore-style composite |
-| 21 | `goals` | Goals | int | count | `true_zero` | `per90_by_minutes` | Outfield only |
-| 22 | `assists` | Assists | int | count | `true_zero` | `per90_by_minutes` | |
-| 11 | `minutes_played` | Minutes Played | int | minutes | `true_zero` | N/A (denominator) | Used as denominator for per-90 |
+| 27 | `goals` | Goals | int | count | `true_zero` | `per90_by_minutes` | Outfield only |
+| 26 | `assists` | Assists | int | count | `true_zero` | `per90_by_minutes` | |
+| 30 | `minutes_played` | Minutes Played | int | minutes | `true_zero` | N/A (denominator) | Used as denominator for per-90 |
 | 14 | `yellow_cards` | Yellow Cards | int | count | `true_zero` | `per90_by_minutes` | |
 | 15 | `red_cards` | Red Cards | int | count | `true_zero` | `per90_by_minutes` | |
 
@@ -49,12 +49,22 @@ These require fetching individual game lineups. May be unavailable for some leag
 
 | API Type ID | Metric Key | Display Name | Data Type | Unit | Missing Semantics | Per-90 Rule | Notes |
 |-------------|-----------|--------------|-----------|------|-------------------|-------------|-------|
-| 42 | `expected_goals` | Expected Goals (xG) | float | xG | `missing` | `per90_by_minutes` | Opta-sourced; not available in all leagues |
-| 56 | `shots_total` | Total Shots | int | count | `missing` | `per90_by_minutes` | Denominator for accuracy |
-| 57 | `shots_on_target` | Shots on Target | int | count | `missing` | `per90_by_minutes` | Numerator for accuracy |
+| 76 | `expected_goals` | Expected Goals (xG) | float | xG | `missing` | `per90_by_minutes` | Opta-sourced; not available in all leagues |
+| 3 | `shots_total` | Total Shots | int | count | `missing` | `per90_by_minutes` | Denominator for accuracy |
+| 4 | `shots_on_target` | Shots on Target | int | count | `missing` | `per90_by_minutes` | Numerator for accuracy |
 | 55 | `touches_in_box` | Touches in Penalty Box | int | count | `missing` | `per90_by_minutes` | Positional involvement |
-| 45 | `key_passes` | Key Passes | int | count | `missing` | `per90_by_minutes` | Chance creation |
+| 46 | `key_passes` | Key Passes | int | count | `missing` | `per90_by_minutes` | Chance creation |
 | 78 | `tackles_won` | Tackles Won | int | count | `missing` | `per90_by_minutes` | Defensive metric |
+
+### 3.1 Observed Internal IDs (Not User-Facing Metrics)
+
+These IDs have appeared in live responses and are tracked internally to reduce warning noise.
+They are not currently surfaced as user-facing analytics metrics.
+
+| API Type ID | Internal Key | Handling |
+|-------------|--------------|----------|
+| 2 | `unknown_2` | Stored internally, excluded from analytics output |
+| 232 | `unknown_232` | Stored internally, excluded from analytics output |
 
 ---
 
@@ -89,9 +99,9 @@ API responses may express "no data" in two ways. The agent MUST handle both cons
 
 | Scenario | Payload Shape | Interpretation for `true_zero` | Interpretation for `missing` |
 |----------|--------------|-------------------------------|------------------------------|
-| Field present, value is `null` | `{"type": 21, "value": null}` | Treat as `0` | Treat as `null` (data unavailable) |
-| Field absent from array | `statistics: [...]` with no entry for type 21 | Treat as `0` | Treat as `null` (data unavailable) |
-| Field present, value is `0` | `{"type": 21, "value": 0}` | Treat as `0` | Treat as `0` (explicitly zero) |
+| Field present, value is `null` | `{"type": 27, "value": null}` | Treat as `0` | Treat as `null` (data unavailable) |
+| Field absent from array | `statistics: [...]` with no entry for type 27 | Treat as `0` | Treat as `null` (data unavailable) |
+| Field present, value is `0` | `{"type": 27, "value": 0}` | Treat as `0` | Treat as `0` (explicitly zero) |
 
 **Implementation rule:** When extracting a metric from the statistics array:
 1. Search for the `type` ID.

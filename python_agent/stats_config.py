@@ -61,17 +61,31 @@ RATING = MetricDef(
     notes="SofaScore-style composite",
 )
 
+UNKNOWN_2 = MetricDef(
+    api_type_id=2, key="unknown_2", display_name="Stat 2",
+    data_type="int", unit="", availability=Availability.L1,
+    missing_semantic=MissingSemantic.MISSING,
+    per90_rule=Per90Rule.NA,
+)
+
+UNKNOWN_232 = MetricDef(
+    api_type_id=232, key="unknown_232", display_name="Stat 232",
+    data_type="int", unit="", availability=Availability.L1,
+    missing_semantic=MissingSemantic.MISSING,
+    per90_rule=Per90Rule.NA,
+)
+
 GOALS = MetricDef(
-    api_type_id=21, key="goals", display_name="Goals",
+    api_type_id=27, key="goals", display_name="Goals",
     data_type="int", unit="count",
     availability=Availability.L1,
     missing_semantic=MissingSemantic.TRUE_ZERO,
     per90_rule=Per90Rule.PER90_BY_MINUTES,
-    notes="Outfield only",
+    notes="Outfield only (ID 21->27)",
 )
 
 ASSISTS = MetricDef(
-    api_type_id=22, key="assists", display_name="Assists",
+    api_type_id=26, key="assists", display_name="Assists",
     data_type="int", unit="count",
     availability=Availability.L1,
     missing_semantic=MissingSemantic.TRUE_ZERO,
@@ -79,12 +93,12 @@ ASSISTS = MetricDef(
 )
 
 MINUTES_PLAYED = MetricDef(
-    api_type_id=11, key="minutes_played", display_name="Minutes Played",
+    api_type_id=30, key="minutes_played", display_name="Minutes Played",
     data_type="int", unit="minutes",
     availability=Availability.L1,
     missing_semantic=MissingSemantic.TRUE_ZERO,
     per90_rule=Per90Rule.NA,
-    notes="Used as denominator for per-90",
+    notes="Used as denominator for per-90 (ID 11->30)",
 )
 
 YELLOW_CARDS = MetricDef(
@@ -107,30 +121,30 @@ RED_CARDS = MetricDef(
 # ─── L2 Metrics (Detailed Lineups Only) ──────────────────────────────────────
 
 EXPECTED_GOALS = MetricDef(
-    api_type_id=42, key="expected_goals", display_name="Expected Goals (xG)",
+    api_type_id=76, key="expected_goals", display_name="Expected Goals (xG)",
     data_type="float", unit="xG",
     availability=Availability.L2,
     missing_semantic=MissingSemantic.MISSING,
     per90_rule=Per90Rule.PER90_BY_MINUTES,
-    notes="Opta-sourced; not available in all leagues",
+    notes="Opta-sourced; not available in all leagues (ID 42->76)",
 )
 
 SHOTS_TOTAL = MetricDef(
-    api_type_id=56, key="shots_total", display_name="Total Shots",
+    api_type_id=3, key="shots_total", display_name="Total Shots",
     data_type="int", unit="count",
     availability=Availability.L2,
     missing_semantic=MissingSemantic.MISSING,
     per90_rule=Per90Rule.PER90_BY_MINUTES,
-    notes="Denominator for accuracy",
+    notes="Denominator for accuracy (ID 56->3)",
 )
 
 SHOTS_ON_TARGET = MetricDef(
-    api_type_id=57, key="shots_on_target", display_name="Shots on Target",
+    api_type_id=4, key="shots_on_target", display_name="Shots on Target",
     data_type="int", unit="count",
     availability=Availability.L2,
     missing_semantic=MissingSemantic.MISSING,
     per90_rule=Per90Rule.PER90_BY_MINUTES,
-    notes="Numerator for accuracy",
+    notes="Numerator for accuracy (ID 57->4)",
 )
 
 TOUCHES_IN_BOX = MetricDef(
@@ -143,12 +157,12 @@ TOUCHES_IN_BOX = MetricDef(
 )
 
 KEY_PASSES = MetricDef(
-    api_type_id=45, key="key_passes", display_name="Key Passes",
+    api_type_id=46, key="key_passes", display_name="Key Passes",
     data_type="int", unit="count",
     availability=Availability.L2,
     missing_semantic=MissingSemantic.MISSING,
     per90_rule=Per90Rule.PER90_BY_MINUTES,
-    notes="Chance creation",
+    notes="Chance creation (ID 45->46)",
 )
 
 TACKLES_WON = MetricDef(
@@ -208,6 +222,7 @@ MINUTES_PER_GOAL = MetricDef(
 ALL_RAW_METRICS: list[MetricDef] = [
     RATING, GOALS, ASSISTS, MINUTES_PLAYED, YELLOW_CARDS, RED_CARDS,
     EXPECTED_GOALS, SHOTS_TOTAL, SHOTS_ON_TARGET, TOUCHES_IN_BOX, KEY_PASSES, TACKLES_WON,
+    UNKNOWN_2, UNKNOWN_232,
 ]
 
 # All derived metrics

@@ -8,9 +8,9 @@
             "score": "2-1",
             "statistics": [
                 {"type": 10, "value": 8.2},
-                {"type": 21, "value": 2},
-                {"type": 22, "value": 0},
-                {"type": 11, "value": 90},
+                {"type": 27, "value": 2},
+                {"type": 26, "value": 0},
+                {"type": 30, "value": 90},
                 {"type": 14, "value": 0},
                 {"type": 15, "value": 0}
             ]
@@ -23,9 +23,9 @@
             "score": "0-3",
             "statistics": [
                 {"type": 10, "value": 9.1},
-                {"type": 21, "value": 2},
-                {"type": 22, "value": 1},
-                {"type": 11, "value": 90},
+                {"type": 27, "value": 2},
+                {"type": 26, "value": 1},
+                {"type": 30, "value": 90},
                 {"type": 14, "value": 0},
                 {"type": 15, "value": 0}
             ]
@@ -38,9 +38,9 @@
             "score": "1-0",
             "statistics": [
                 {"type": 10, "value": 7.4},
-                {"type": 21, "value": 0},
-                {"type": 22, "value": 1},
-                {"type": 11, "value": 78},
+                {"type": 27, "value": 0},
+                {"type": 26, "value": 1},
+                {"type": 30, "value": 78},
                 {"type": 14, "value": 1},
                 {"type": 15, "value": 0}
             ]
@@ -53,9 +53,9 @@
             "score": "1-2",
             "statistics": [
                 {"type": 10, "value": 7.8},
-                {"type": 21, "value": 1},
-                {"type": 22, "value": 0},
-                {"type": 11, "value": 85},
+                {"type": 27, "value": 1},
+                {"type": 26, "value": 0},
+                {"type": 30, "value": 85},
                 {"type": 14, "value": 0},
                 {"type": 15, "value": 0}
             ]
@@ -68,9 +68,9 @@
             "score": "0-0",
             "statistics": [
                 {"type": 10, "value": 6.3},
-                {"type": 21, "value": 0},
-                {"type": 22, "value": 0},
-                {"type": 11, "value": 90},
+                {"type": 27, "value": 0},
+                {"type": 26, "value": 0},
+                {"type": 30, "value": 90},
                 {"type": 14, "value": 0},
                 {"type": 15, "value": 0}
             ]

@@ -338,19 +338,19 @@ async def test_get_game_lineup_saka_replay():
 
 def test_extract_present_value():
     """Numeric value present → return as-is."""
-    stats = [{"type": 21, "value": 3}]
+    stats = [{"type": 27, "value": 3}]
     assert extract_metric_value(stats, GOALS) == 3
 
 
 def test_extract_present_null_true_zero():
     """Value is null + true_zero semantic → 0."""
-    stats = [{"type": 21, "value": None}]
+    stats = [{"type": 27, "value": None}]
     assert extract_metric_value(stats, GOALS) == 0
 
 
 def test_extract_present_null_missing():
     """Value is null + missing semantic → None."""
-    stats = [{"type": 42, "value": None}]
+    stats = [{"type": 76, "value": None}]
     assert extract_metric_value(stats, EXPECTED_GOALS) is None
 
 
@@ -368,10 +368,10 @@ def test_extract_absent_missing():
 
 def test_extract_present_zero():
     """Explicit 0 value → always 0 regardless of semantics."""
-    stats_zero = [{"type": 21, "value": 0}]
+    stats_zero = [{"type": 27, "value": 0}]
     assert extract_metric_value(stats_zero, GOALS) == 0
 
-    stats_xg_zero = [{"type": 42, "value": 0}]
+    stats_xg_zero = [{"type": 76, "value": 0}]
     assert extract_metric_value(stats_xg_zero, EXPECTED_GOALS) == 0
 
 
