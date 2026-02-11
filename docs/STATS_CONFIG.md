@@ -199,9 +199,9 @@ File: `python_agent/config/baselines.json`
 
 | Condition | Behavior | Warning |
 |-----------|----------|---------|
-| Baseline missing for league/season/position | Disable z-score for that metric | `BASELINE_MISSING` with `details.fallback: "disabled"` |
-| `std == 0` | Disable z-score (division by zero) | `BASELINE_MISSING` with `details.fallback: "disabled", details.reason: "zero_variance"` |
-| `n < 30` | Disable z-score (insufficient sample) | `BASELINE_MISSING` with `details.fallback: "disabled", details.reason: "low_sample", details.n: <N>` |
+| Baseline missing for league/season/position | Disable z-score for that metric | `BASELINE_MISSING` with `details.fallback: "raw_per90"` |
+| `std == 0` | Disable z-score (division by zero) | `BASELINE_MISSING` with `details.fallback: "raw_per90", details.reason: "zero_variance"` |
+| `n < 30` | Disable z-score (insufficient sample) | `BASELINE_MISSING` with `details.fallback: "raw_per90", details.reason: "low_sample", details.n: <N>` |
 
 In all fallback cases: return the **raw per-90 value** without z-score interpretation. The agent should narrate "compared to league average" only when z-score is available.
 

@@ -193,8 +193,8 @@ Warnings MUST be structured objects:
   },
   {
     "code": "BASELINE_MISSING",
-    "message": "No league baseline for xG (Bundesliga). Z-score disabled.",
-    "details": {"metric": "xg", "fallback": "disabled"}
+    "message": "No league baseline for xG (Bundesliga). Returning raw per-90.",
+    "details": {"metric": "xg", "fallback": "raw_per90"}
   }
 ]
 ```
@@ -288,7 +288,9 @@ Node is the source of truth for session persistence.
 
 ### 7.2 Naming Convention
 
-`{trace_id}_{tool}.png`
+`{trace_id}_{tool}-{suffix}.png`
+
+Example: `ftiq_8f2c_form-goals.png`
 
 Example: `ftiq_8f2c_form.png`
 

@@ -1,0 +1,38 @@
+{
+    "premier_league": {
+        "2025_2026": {
+            "all_positions": {
+                "rating": {
+                    "mean": 6.85,
+                    "std": 0.55,
+                    "n": 200
+                },
+                "goals": {
+                    "mean": 0.25,
+                    "std": 0.22,
+                    "n": 200
+                },
+                "assists": {
+                    "mean": 0.18,
+                    "std": 0.15,
+                    "n": 200
+                },
+                "expected_goals": {
+                    "mean": 0.28,
+                    "std": 0.20,
+                    "n": 150
+                },
+                "key_passes": {
+                    "mean": 1.2,
+                    "std": 0.8,
+                    "n": 150
+                },
+                "tackles_won": {
+                    "mean": 1.8,
+                    "std": 1.1,
+                    "n": 150
+                }
+            }
+        }
+    }
+}
