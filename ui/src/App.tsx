@@ -54,7 +54,7 @@ export default function App() {
       {/* Main */}
       <main className="app-main">
         {showEmpty ? (
-          <EmptyState onSelect={send} />
+          <EmptyState onSelect={send} dataMode={dataMode} />
         ) : (
           <ChatMessageList
             messages={messages}

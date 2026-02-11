@@ -7,6 +7,18 @@ a mock response using the contract schema (§2.1/§2.2).
 Replace the mock logic with real tool chains in Phase 2–4.
 """
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env (execution root) for local development
+env_path = Path(__file__).resolve().parent.parent / ".env"
+if env_path.exists():
+    print(f"Loading environment from {env_path}")
+    load_dotenv(dotenv_path=env_path)
+else:
+    print(f"Warning: .env not found at {env_path}")
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field

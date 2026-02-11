@@ -13,6 +13,7 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field
+from contextvars import ContextVar
 from typing import Any, Dict, List, Optional
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -80,25 +81,29 @@ class AgentResult:
 
 # ─── Per-request Context ──────────────────────────────────────────────────────
 
-_request_context: Dict[str, Any] = {}
+_request_context_var: ContextVar[Dict[str, Any]] = ContextVar("request_context", default={})
+
+
+def _get_request_context() -> Dict[str, Any]:
+    return _request_context_var.get()
 
 
 def set_request_context(data_mode: str, allow_live_fetch: bool) -> None:
-    global _request_context
-    _request_context = {
+    _request_context_var.set({
         "data_mode": data_mode,
         "allow_live_fetch": allow_live_fetch,
         "warnings": [],
         "artifacts": [],
         "sources": [],
         "last_cache_hit": None,
-    }
+    })
 
 
 def _append_warnings(warnings: Optional[list]) -> None:
     if not warnings:
         return
-    _request_context.setdefault("warnings", []).extend(warnings)
+    ctx = _get_request_context()
+    ctx.setdefault("warnings", []).extend(warnings)
 
 
 def _normalize_search_results(payload: Any) -> List[dict]:
@@ -145,12 +150,13 @@ def _normalize_search_results(payload: Any) -> List[dict]:
 @tool
 async def search_player(query: str) -> dict:
     """Search for a football player by name and return a resolved player record."""
-    mode = _request_context.get("data_mode", "live")
-    allow_live_fetch = _request_context.get("allow_live_fetch", True)
+    ctx = _get_request_context()
+    mode = ctx.get("data_mode", "live")
+    allow_live_fetch = ctx.get("allow_live_fetch", True)
 
     result = await search_entity(query, data_mode=mode, allow_live_fetch=allow_live_fetch)
     _append_warnings(result.warnings)
-    _request_context["last_cache_hit"] = result.cache_hit
+    ctx["last_cache_hit"] = result.cache_hit
 
     if result.error:
         raise ContractError("UPSTREAM_DOWN", result.error)
@@ -175,8 +181,9 @@ async def search_player(query: str) -> dict:
 @tool
 async def get_recent_games(athlete_id: int, last_n: int = 5) -> list:
     """Get the last N normalized games for a player."""
-    mode = _request_context.get("data_mode", "live")
-    allow_live_fetch = _request_context.get("allow_live_fetch", True)
+    ctx = _get_request_context()
+    mode = ctx.get("data_mode", "live")
+    allow_live_fetch = ctx.get("allow_live_fetch", True)
 
     result = await get_athlete_games(
         athlete_id,
@@ -185,7 +192,7 @@ async def get_recent_games(athlete_id: int, last_n: int = 5) -> list:
         allow_live_fetch=allow_live_fetch,
     )
     _append_warnings(result.warnings)
-    _request_context["last_cache_hit"] = result.cache_hit
+    ctx["last_cache_hit"] = result.cache_hit
 
     if result.error:
         raise ContractError("UPSTREAM_DOWN", result.error)
@@ -214,8 +221,9 @@ async def get_recent_games(athlete_id: int, last_n: int = 5) -> list:
 @tool
 async def get_detailed_stats(athlete_id: int, game_id: int) -> dict:
     """Get detailed lineup stats (L2) for a specific game."""
-    mode = _request_context.get("data_mode", "live")
-    allow_live_fetch = _request_context.get("allow_live_fetch", True)
+    ctx = _get_request_context()
+    mode = ctx.get("data_mode", "live")
+    allow_live_fetch = ctx.get("allow_live_fetch", True)
 
     result = await get_game_lineup(
         athlete_id,
@@ -224,7 +232,7 @@ async def get_detailed_stats(athlete_id: int, game_id: int) -> dict:
         allow_live_fetch=allow_live_fetch,
     )
     _append_warnings(result.warnings)
-    _request_context["last_cache_hit"] = result.cache_hit
+    ctx["last_cache_hit"] = result.cache_hit
 
     if result.error:
         raise ContractError("UPSTREAM_DOWN", result.error)
@@ -295,7 +303,8 @@ def show_form_chart(games: list, metric: str, player_name: str, trace_id: str) -
     if plot_res.error or not plot_res.value:
         return "Plot generation failed."
 
-    _request_context.setdefault("artifacts", []).append(
+    ctx = _get_request_context()
+    ctx.setdefault("artifacts", []).append(
         {
             "type": "plot",
             "url": plot_res.value,
@@ -427,11 +436,12 @@ async def run_agent(
                 raise ContractError("UPSTREAM_DOWN", f"Tool {tool_name} failed: {exc}")
 
             duration_ms = int((time.perf_counter() - started) * 1000)
+            ctx = _get_request_context()
             tools_invoked_log.append(
                 {
                     "tool": tool_name,
                     "duration_ms": duration_ms,
-                    "cache_hit": _request_context.pop("last_cache_hit", None),
+                    "cache_hit": ctx.pop("last_cache_hit", None),
                 }
             )
 
@@ -457,13 +467,14 @@ async def run_agent(
     reasoning = "SYNTHESIS" if depth_used == "L2" else "DATA_ONLY"
 
     answer = response.content if isinstance(response.content, str) else str(response.content)
-    suggestions = _request_context.get("suggestions", [])[:3]
-    warnings = _request_context.get("warnings", [])
+    ctx = _get_request_context()
+    suggestions = ctx.get("suggestions", [])[:3]
+    warnings = ctx.get("warnings", [])
 
     return AgentResult(
         answer=answer,
-        artifacts=_request_context.get("artifacts", []),
-        sources=_request_context.get("sources", []),
+        artifacts=ctx.get("artifacts", []),
+        sources=ctx.get("sources", []),
         data_depth=depth_used,
         reasoning_mode=reasoning,
         tools_invoked=tools_invoked_log,

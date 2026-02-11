@@ -10,6 +10,7 @@ All values are pre-calculated from the fixtures for deterministic assertions.
 
 import pytest
 import asyncio
+import httpx
 import data_tools
 from data_tools import (
     search_entity, get_athlete_games, get_game_lineup,
@@ -124,6 +125,57 @@ async def test_search_entity_cache_hit():
     warning_codes = [w["code"] for w in r2.warnings]
     assert "DATA_MODE_REPLAY" in warning_codes
     assert "USED_CACHED_DATA" in warning_codes
+
+
+@pytest.mark.asyncio
+async def test_search_entity_live_alias_fallback_when_search_unavailable(monkeypatch):
+    """Live mode should use alias map if /search is unavailable on current plan."""
+    async def _mock_api_request(endpoint: str, params: dict = None):
+        request = httpx.Request("GET", f"https://v1.football.sportsapipro.com{endpoint}")
+        response = httpx.Response(status_code=404, request=request)
+        raise httpx.HTTPStatusError("Not Found", request=request, response=response)
+
+    monkeypatch.setattr(data_tools, "_api_request", _mock_api_request)
+
+    result = await search_entity("Haaland", data_mode="live", allow_live_fetch=True)
+    assert result.error is None
+    assert result.data is not None
+    assert result.data["results"][0]["entity"]["id"] == 65760
+    warning_codes = [w["code"] for w in result.warnings]
+    assert "SEARCH_UNAVAILABLE_USING_ALIAS" in warning_codes
+
+
+@pytest.mark.asyncio
+async def test_search_entity_live_no_alias_when_search_unavailable(monkeypatch):
+    """Live mode should return explicit error if /search is unavailable and alias is missing."""
+    async def _mock_api_request(endpoint: str, params: dict = None):
+        request = httpx.Request("GET", f"https://v1.football.sportsapipro.com{endpoint}")
+        response = httpx.Response(status_code=404, request=request)
+        raise httpx.HTTPStatusError("Not Found", request=request, response=response)
+
+    monkeypatch.setattr(data_tools, "_api_request", _mock_api_request)
+
+    result = await search_entity("Nonexistent Alias Name", data_mode="live", allow_live_fetch=True)
+    assert result.error is not None
+    warning_codes = [w["code"] for w in result.warnings]
+    assert "SEARCH_ENDPOINT_UNAVAILABLE" in warning_codes
+
+
+@pytest.mark.asyncio
+async def test_search_entity_live_alias_substring_when_search_unavailable(monkeypatch):
+    """Alias map should match names embedded in a full sentence query."""
+    async def _mock_api_request(endpoint: str, params: dict = None):
+        request = httpx.Request("GET", f"https://v1.football.sportsapipro.com{endpoint}")
+        response = httpx.Response(status_code=404, request=request)
+        raise httpx.HTTPStatusError("Not Found", request=request, response=response)
+
+    monkeypatch.setattr(data_tools, "_api_request", _mock_api_request)
+
+    result = await search_entity("show me Haaland's trend", data_mode="live", allow_live_fetch=True)
+    assert result.error is None
+    assert result.data["results"][0]["entity"]["id"] == 65760
+    warning_codes = [w["code"] for w in result.warnings]
+    assert "SEARCH_UNAVAILABLE_USING_ALIAS" in warning_codes
 
 
 @pytest.mark.asyncio
@@ -323,6 +375,69 @@ def test_extract_present_zero():
     assert extract_metric_value(stats_xg_zero, EXPECTED_GOALS) == 0
 
 
+def test_normalize_games_live_shape_uses_fallback_ids():
+    """New live shape (game + athleteStats) should normalize into standard L1 metrics."""
+    raw = {
+        "games": [
+            {
+                "game": {
+                    "id": 4452657,
+                    "startTime": "2026-02-08T16:30:00+00:00",
+                    "homeCompetitor": {"id": 108, "name": "Liverpool", "score": 1},
+                    "awayCompetitor": {"id": 110, "name": "Manchester City", "score": 1},
+                    "scores": [1, 1],
+                },
+                "relatedCompetitor": 110,
+                "athleteStats": [
+                    {"type": 229, "value": "90"},   # minutes_played fallback
+                    {"type": 225, "value": "1"},    # goals fallback
+                    {"type": 226, "value": "0"},    # assists fallback
+                    {"type": 0, "value": "7.2"},    # rating fallback
+                ],
+            }
+        ]
+    }
+
+    normalized = _normalize_games(raw)
+    assert len(normalized["games"]) == 1
+    g = normalized["games"][0]
+    assert g["game_id"] == 4452657
+    assert g["date"] == "2026-02-08T16:30:00+00:00"
+    assert g["score"] == "1-1"
+    assert g["opponent"] == "Liverpool"
+    assert g["metrics"]["minutes_played"] == 90
+    assert g["metrics"]["goals"] == 1
+    assert g["metrics"]["assists"] == 0
+    assert g["metrics"]["rating"] == 7.2
+    assert len(normalized["normalization_warnings"]) == 0
+
+
+def test_normalize_lineup_live_shape_uses_fallback_ids():
+    """Lineup normalization should handle athleteStats in live-shape payloads."""
+    raw = {
+        "lineup": {
+            "game": {"id": 4452657},
+            "athleteId": 65760,
+            "position": {"name": "Attacker"},
+            "athleteStats": [
+                {"type": 229, "value": "90"},
+                {"type": 225, "value": "1"},
+                {"type": 226, "value": "0"},
+                {"type": 0, "value": "7.8"},
+            ],
+        }
+    }
+
+    normalized = _normalize_lineup(raw)
+    assert normalized["game_id"] == 4452657
+    assert normalized["athlete_id"] == 65760
+    assert normalized["position"] == "Attacker"
+    assert normalized["metrics"]["minutes_played"] == 90
+    assert normalized["metrics"]["goals"] == 1
+    assert normalized["metrics"]["assists"] == 0
+    assert normalized["metrics"]["rating"] == 7.8
+
+
 # ─── Cache-only mode ─────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
@@ -335,13 +450,38 @@ async def test_cache_only_no_data():
 
 
 @pytest.mark.asyncio
-async def test_cache_only_with_primed_cache():
-    """cache-only with primed cache should succeed."""
-    # Prime cache via replay
+async def test_cache_only_with_replay_primed_cache_does_not_leak_to_live():
+    """Replay cache entries must not satisfy live-mode cache-only requests."""
     r1 = await search_entity("haaland", data_mode="replay")
     assert r1.error is None
 
-    # Now cache-only should work
+    r2 = await search_entity("haaland", data_mode="live", allow_live_fetch=False)
+    assert r2.error is not None
+    warning_codes = [w["code"] for w in r2.warnings]
+    assert "CACHE_ONLY_MODE" in warning_codes
+
+
+@pytest.mark.asyncio
+async def test_cache_only_with_live_primed_cache_succeeds(monkeypatch):
+    """Live cache-only should work when live cache was primed first."""
+    async def _mock_api_request(endpoint: str, params: dict = None):
+        assert endpoint == "/search"
+        return {
+            "results": [
+                {
+                    "type": "player",
+                    "entity": {"id": 65760, "name": "Erling Haaland", "team": {"name": "Manchester City"}},
+                    "score": 100.0,
+                }
+            ]
+        }
+
+    monkeypatch.setattr(data_tools, "_api_request", _mock_api_request)
+
+    r1 = await search_entity("haaland", data_mode="live", allow_live_fetch=True)
+    assert r1.error is None
+    assert r1.cache_hit is False
+
     r2 = await search_entity("haaland", data_mode="live", allow_live_fetch=False)
     assert r2.error is None
     assert r2.cache_hit is True
